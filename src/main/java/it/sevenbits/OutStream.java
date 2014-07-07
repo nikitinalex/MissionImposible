@@ -7,7 +7,6 @@ import java.io.IOException;
 
 public interface OutStream extends Stream {
     public void recordSymbol(char newSymb);
-
 }
 
 class FileOutStream implements OutStream {

@@ -1,6 +1,5 @@
 package it.sevenbits;
 
-import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -9,9 +8,10 @@ import java.util.ArrayList;
  *
  */
 public class CodeFormatter {
-    private String fileName;
-    public CodeFormatter(String fileName) {
-        this.fileName = fileName;
+    private int offset = 0;
+    private final char offsetSymb = ' ';
+    public CodeFormatter() {
+
     }
 
     /**
@@ -22,49 +22,179 @@ public class CodeFormatter {
      * @throws
      *
      */
-    public void format() throws FileException {
-        LineNumberReader readingFile = null;
-        PrintWriter recordFile = null;
-        try {
-             readingFile = new LineNumberReader(new FileReader(fileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    public void format(InStream in, OutStream out) throws FileException {
+        if (in == null || out == null) {
+            return;
         }
 
-        String recordFileName = "1";
-        recordFileName += fileName;
-        try {
-            recordFile = new PrintWriter(new BufferedWriter(new FileWriter(recordFileName)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        char curSymb;
+        boolean transBefore = false;
+        boolean forBefore = false;
+        boolean preparedFor = false;
+        int roundBrackets = 0;
+        String bufString = new String("");
 
-        String read = null;
-        try {
-            //обработка
-            ArrayList<String> recordStrings = new ArrayList<String>();
-            read = readingFile.readLine();
-            while (read != null) {
-                recordStrings.add(read);
-                read = readingFile.readLine();
+        while ((curSymb = in.getSymbol()) != (char) -1) {
+            switch (curSymb) {
+                case ' ': {
+                    if (preparedFor) {
+                        forBefore = true;
+                        preparedFor = false;
+                    }
+                    if (transBefore) {
+                        continue;
+                    }
+                    bufString += ' ';
+                    break;
+                }
+                case ';': {
+                    if (!forBefore) {
+                        transBefore = true;
+                        bufString += ';';
+                        bufString = recordInStream(bufString, out);
+                        continue;
+                    } else {
+                        bufString += ";";
+                    }
+                    break;
+                }
+                case '{': {
+                    offset++;
+                    transBefore = true;
+                    bufString += '{';
+                    bufString = recordInStream(bufString, out);
+                    continue;
+                }
+                case '}': {
+                    bufString = "";
+                    offset--;
+                    transBefore = true;
+                    bufString = addSpaces(bufString, offset);
+                    bufString += '}';
+                    bufString = recordInStream(bufString, out);
+                    continue;
+                }
+                case '(': {
+                    if (preparedFor) {
+                        forBefore = true;
+                        preparedFor = false;
+                    }
+                    roundBrackets++;
+                    bufString += '(';
+                    break;
+                }
+                case ')': {
+                    roundBrackets--;
+                    if (forBefore && roundBrackets == 0) {
+                        forBefore = false;
+                    }
+                    bufString += ')';
+                    break;
+                }
+                case '\r': {
+                    continue;
+                }
+                case '\n': {
+                    if (transBefore) {
+                        continue;
+                    }
+                    transBefore = true;
+                    bufString = recordInStream(bufString, out);
+                    continue;
+                }
+                case 'r': {
+                    preparedFor = isFor(bufString);
+                    bufString += 'r';
+                    break;
+                }
+                default: {
+                    bufString += curSymb;
+                    break;
+                }
             }
-            recordStrings = formatSingleString(recordStrings);
-            for(String str: recordStrings) {
-                recordFile.write(str);
+            if (curSymb != '\n' && transBefore) {
+                transBefore = false;
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        }
+        if (bufString.equals("")) {
+            recordString(bufString, out);
         }
 
-        try {
-            readingFile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+//        LineNumberReader readingFile = null;
+//        PrintWriter recordFile = null;
+//        try {
+//             readingFile = new LineNumberReader(new FileReader(fileName));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String recordFileName = "1";
+//        recordFileName += fileName;
+//        try {
+//            recordFile = new PrintWriter(new BufferedWriter(new FileWriter(recordFileName)));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        String read = null;
+//        try {
+//            //обработка
+//            ArrayList<String> recordStrings = new ArrayList<String>();
+//            read = readingFile.readLine();
+//            while (read != null) {
+//                recordStrings.add(read);
+//                read = readingFile.readLine();
+//            }
+//            recordStrings = formatSingleString(recordStrings);
+//            for(String str: recordStrings) {
+//                recordFile.write(str);
+//            }
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        try {
+//            readingFile.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//        recordFile.close();
+    }
+
+    private String recordInStream(String str, OutStream stream) {
+        str += '\n';
+        recordString(str, stream);
+        str = "";
+        str = addSpaces(str, offset);
+        return str;
+    }
+
+    private boolean isFor(String str) {
+        if (str.length() < 2) {
+            return false;
         }
+        int len = str.length();
+        String s = str.substring(len - 2, len);
+        if(s.equals("fo")) {
+            return true;
+        }
+        return false;
+    }
 
+    private void recordString(String bufString, OutStream out) {
+        for(int i = 0; i < bufString.length(); i++) {
+            out.recordSymbol(bufString.charAt(i));
+        }
+    }
 
-        recordFile.close();
+    private String addSpaces(String str, int controlBrackets) {
+        for (int i = 0; i < 4 * controlBrackets; i++) {
+            str += this.offsetSymb;
+        }
+        return str;
     }
 
     private ArrayList<String> formatSingleString(ArrayList<String> stringsToFormat) {
@@ -87,7 +217,7 @@ public class CodeFormatter {
                     continue;
                 }
                 if (newStr.equals("")) {
-                    newStr = addSpaces(newStr, constructBrackets);
+                    newStr = addSpaces1(newStr, constructBrackets);
                 }
                 switch (parsSymbol) {
                     case ';': {
@@ -100,6 +230,10 @@ public class CodeFormatter {
                         if (!stringOnlyWithSpaces(newStr)) {
                             newStr += ' ';
                         }
+                        break;
+                    }
+                    case 'f': {
+
                         break;
                     }
                     case '\n': {
@@ -121,7 +255,7 @@ public class CodeFormatter {
                     case '}': {
                         constructBrackets--;
                         newStr = "";
-                        newStr = addSpaces(newStr, constructBrackets);
+                        newStr = addSpaces1(newStr, constructBrackets);
                         newStr = addStringAndUpdate(newStr, "}\n", strings);
                         countOfTransfer++;
                         break;
@@ -237,7 +371,7 @@ public class CodeFormatter {
         return true;
     }
 
-    private String addSpaces(String str, int spaces) {
+    private String addSpaces1(String str, int spaces) {
         for (int i = 0; i < spaces; i++) {
             str += "    ";
         }
