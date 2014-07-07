@@ -1,10 +1,8 @@
 package it.sevenbits;
 
 
-import java.io.IOException;
-
 /**
- * Created by alexey on 7/3/14.
+ * Main class
  */
 public class TextMaker {
     public static void main(String[] args) {

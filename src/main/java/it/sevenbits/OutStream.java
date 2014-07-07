@@ -5,15 +5,33 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * Interface for output stream
+ */
 public interface OutStream extends Stream {
+    /**
+     * Writes symbol into stream
+     * @param newSymb Symbol for record
+     */
     public void recordSymbol(char newSymb);
 }
 
+/**
+ * Class for output stream by file
+ */
 class FileOutStream implements OutStream {
 
+    /**
+     * fileName Name of file
+     * fileStream Stream itself
+     */
     private String fileName;
     private FileOutputStream fileStream;
 
+    /**
+     * Constructor by the name
+     * @param fileName name of file
+     */
     public FileOutStream(String fileName) {
         this.fileName = fileName;
         try {
@@ -23,6 +41,10 @@ class FileOutStream implements OutStream {
         }
     }
 
+    /**
+     * Getter
+     * @return name of file
+     */
     public String getFileName() {
         return fileName;
     }
@@ -47,15 +69,27 @@ class FileOutStream implements OutStream {
     }
 }
 
+/**
+ * Class for stream or cover for String
+ */
 class StringOutStream implements OutStream {
+    /**
+     * outStringStream Stream itself
+     * pointer Pointer on current symbol in stream
+     */
     private StringBuilder outStringStream;
     private int pointer;
 
+    /**
+     * Constructor
+     * @param workingStream Stream
+     */
     public StringOutStream(StringBuilder workingStream) {
         outStringStream = workingStream;
         pointer = outStringStream.length() - 1;
     }
 
+    @Override
     public void recordSymbol(char newSymb) {
         outStringStream.append(newSymb);
         pointer++;
