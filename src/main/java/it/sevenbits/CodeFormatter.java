@@ -26,15 +26,15 @@ public class CodeFormatter {
      * @param  in  Input Stream
      * @param out Output Stream
      */
-    public void format(final InStream in, final OutStream out) {
+    public void format(final InStream in, final OutStream out) throws StreamException, FormatterException {
         if (in == null) {
-            throw new InputStreamException("Null input stream");
+            throw new FormatterException("Null input stream");
         }
         if (out == null) {
-            throw new OutputStreamException("Null output stream");
+            throw new FormatterException("Null output stream");
         }
 
-        char curSymb;
+        char curSymb = 0;
         boolean transBefore = false;
         boolean forBefore = false;
         boolean preparedFor = false;
@@ -42,7 +42,14 @@ public class CodeFormatter {
         int roundBrackets = 0;
         String bufString = new String("");
 
-        while ((curSymb = in.getSymbol()) != (char) -1) {
+        while (!in.IsEnd()) {
+            try {
+                curSymb = in.getSymbol();
+            } catch (StreamException e) {
+                in.close();
+                out.close();
+                throw new FormatterException("Symbol trouble");
+            }
             switch (curSymb) {
                 case ' ':
                     if (preparedFor) {
@@ -118,19 +125,10 @@ public class CodeFormatter {
             }
         }
         if (bufString.equals("")) {
-            recordString(bufString, out);
+            out.writeString(bufString);
         }
-        try {
-            in.closeStream();
-        } catch (IOException e) {
-            throw new InputStreamException("Problem with closure input stream");
-        }
-        try {
-            out.closeStream();
-        } catch (IOException e) {
-            throw new OutputStreamException("Problem with closure output "
-                    + "stream");
-        }
+        in.close();
+        out.close();
     }
 
     /**
@@ -159,7 +157,11 @@ public class CodeFormatter {
                                   final int offset) {
         String rec = str;
         rec += '\n';
-        recordString(rec, stream);
+        try {
+            stream.writeString(rec);
+        } catch (StreamException e) {
+            e.printStackTrace();
+        }
         rec = "";
         rec = addSpaces(str, offset);
         return rec;
@@ -186,17 +188,6 @@ public class CodeFormatter {
         }
 
         return false;
-    }
-
-    /**
-     * Records string into stream.
-     * @param str input string
-     * @param out stream
-     */
-    private void recordString(final String str, final OutStream out) {
-        for (int i = 0; i < str.length(); i++) {
-            out.recordSymbol(str.charAt(i));
-        }
     }
 
     /**

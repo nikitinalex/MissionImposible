@@ -1,6 +1,5 @@
 package it.sevenbits;
 
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,12 +7,14 @@ import java.io.IOException;
 /**
  * Interface for output stream.
  */
-public interface OutStream extends Stream {
+public interface OutStream {
     /**
      * Writes symbol into stream.
-     * @param newSymb Symbol for record
+     * @param b Symbol for record
      */
-    void recordSymbol(char newSymb);
+    void writeSymbol(char b) throws StreamException;
+    void writeString(String str) throws StreamException;
+    void close() throws StreamException;
 }
 
 /**
@@ -34,39 +35,45 @@ class FileOutStream implements OutStream {
      * Constructor by the name.
      * @param newFileName name of file
      */
-    public FileOutStream(final String newFileName) {
+    public FileOutStream(final String newFileName) throws StreamException {
         this.fileName = newFileName;
         try {
             fileStream = new FileOutputStream(this.fileName);
         } catch (FileNotFoundException e) {
-            throw new FileProblem("Problems with output file, check the name");
+            throw new StreamException("File is not available or corrupted");
         }
     }
 
-    /**
-     * Getter.
-     * @return name of file
-     */
-    public String getFileName() {
-        return fileName;
-    }
-
-
     @Override
-    public boolean closeStream() throws IOException {
-        if (fileStream == null) {
-            return false;
+    public void writeString (String str) throws StreamException {
+        if (str == null) {
+            throw new StreamException("Output string is empty");
         }
-        fileStream.close();
-        return true;
-    }
-
-    @Override
-    public void recordSymbol(final char newSymb) {
         try {
-            fileStream.write((int) newSymb);
+            for (int i = 0; i < str.length(); i++) {
+                char recSym = str.charAt(i);
+                fileStream.write((int) recSym);
+            }
         } catch (IOException e) {
-            throw new FileProblem("It doesn't recording");
+            throw new StreamException("Stream is not available");
+        }
+    }
+
+    @Override
+    public void close() throws StreamException {
+        try {
+            fileStream.close();
+        } catch (IOException e) {
+            throw new StreamException("Stream is not available");
+        }
+    }
+
+    @Override
+    public void writeSymbol(final char b) throws StreamException {
+        try {
+            fileStream.write((int) b);
+        } catch (IOException e) {
+            throw new StreamException("Stream is not available");
         }
     }
 }
@@ -79,28 +86,53 @@ class StringOutStream implements OutStream {
      * Stream itself.
      */
     private StringBuilder outStringStream;
-    /**
-     * Pointer on current symbol in stream.
-     */
-    private int pointer;
+    private int streamSize;
+    private boolean isClosed = false;
 
     /**
      * Constructor.
-     * @param workingStream Stream
+     * @param size Size of stream
      */
-    public StringOutStream(final StringBuilder workingStream) {
-        outStringStream = workingStream;
-        pointer = outStringStream.length() - 1;
+    public StringOutStream(final int size) {
+        //согласно сигнатуре не надо выбрасывать исключения,
+        //но неплохо бы это делать на случай, если size отрицателен
+        if (size > 0) {
+            outStringStream = new StringBuilder(size);
+        }
     }
 
     @Override
-    public void recordSymbol(final char newSymb) {
-        outStringStream.append(newSymb);
-        pointer++;
+    public void writeSymbol(final char b) throws StreamException {
+        if (outStringStream == null || isClosed) {
+            throw new StreamException("Stream is not available");
+        }
+        outStringStream.append(b);
     }
 
     @Override
-    public boolean closeStream() throws IOException {
-        return true;
+    public void writeString(final String str) throws StreamException {
+        //почему-то этот метод есть в двух имплементируемых
+        //классах, но нет в интерфейсе OutStream
+        if (str == null) {
+            throw new StreamException("Output string is empty");
+        }
+        if (outStringStream == null) {
+            throw new StreamException("Stream is not available");
+        }
+        outStringStream.append(str);
+    }
+
+    @Override
+    public void close() throws StreamException {
+        if (outStringStream == null) {
+            throw new StreamException("Stream is not available");
+        }
+        isClosed = true;
+        return;
+    }
+
+    @Override
+    public String toString() {
+        return outStringStream.toString();
     }
 }

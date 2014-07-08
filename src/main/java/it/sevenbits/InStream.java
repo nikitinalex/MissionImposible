@@ -7,12 +7,26 @@ import java.io.IOException;
 /**
  * Interface for input stream.
  */
-public interface InStream extends Stream {
+public interface InStream  {
     /**
      * Reads one symbol.
      * @return symbol from stream or -1 if the end of file is distinguished
+     * @throws StreamException if stream is not available
      */
-    char getSymbol();
+    char getSymbol() throws StreamException;
+
+    /**
+     * Checks on end of stream.
+     * @return true if it is the end
+     * @throws StreamException if stream is not available
+     */
+    boolean isEnd() throws StreamException;
+
+    /**
+     * Checks stream on closure.
+     * @throws StreamException if stream is not available
+     */
+    void close() throws StreamException;
 }
 
 /**
@@ -32,46 +46,45 @@ class FileInStream implements InStream {
      * Constructing stream by file name.
      * @param newFileName - name of file for stream
      */
-    public FileInStream(final String newFileName) {
+    public FileInStream(final String newFileName) throws StreamException {
         this.fileName = newFileName;
         try {
             fileStream = new FileInputStream(newFileName);
         } catch (FileNotFoundException e) {
-            throw new FileProblem("File can not be opened");
+            throw new StreamException("File is not available or corrupted");
         }
     }
 
-    /**
-     * Getter for name of file stream.
-     * @return fileName
-     */
-    public String getFileName() {
-        return fileName;
-    }
-
     @Override
-    public char getSymbol() {
+    public char getSymbol() throws StreamException {
         char res;
         try {
             res = (char) fileStream.read();
-
         } catch (IOException e) {
-            throw new FileProblem("Can not read this file");
+            throw new StreamException("Stream is not available");
         }
         return res;
     }
 
     @Override
-    public boolean closeStream() {
-        if (fileStream != null) {
-            try {
-                fileStream.close();
-            } catch (IOException e) {
-                throw new FileProblem("Stream can not be close");
+    public boolean isEnd() throws StreamException {
+        try {
+            if (fileStream.available() > 0) {
+                return true;
             }
-            return true;
+        } catch (IOException e) {
+            throw new StreamException("Stream is not available");
         }
         return false;
+    }
+
+    @Override
+    public void close() throws StreamException {
+        try {
+            fileStream.close();
+        } catch (IOException e) {
+            throw new StreamException("Stream is not available");
+        }
     }
 }
 
@@ -88,6 +101,8 @@ class StringInStream implements InStream {
      */
     private int pointer = 0;
 
+    private boolean isClose = false;
+
     /**
      * Constructor.
      * @param streamStr Stream itself
@@ -97,7 +112,11 @@ class StringInStream implements InStream {
     }
 
     @Override
-    public char getSymbol() {
+    public char getSymbol() throws StreamException {
+        if (streamString == null || isClose) {
+            throw new StreamException("Stream is not available");
+        }
+
         if (pointer != streamString.length()) {
             return streamString.charAt(pointer);
         }
@@ -105,8 +124,21 @@ class StringInStream implements InStream {
     }
 
     @Override
-    public boolean closeStream() {
-        return true;
+    public boolean isEnd() throws StreamException {
+        if (streamString == null || isClose) {
+            throw new StreamException("Stream is not available");
+        }
+
+        if (pointer == streamString.length()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void close() {
+        isClose = true;
+        return;
     }
 }
 
