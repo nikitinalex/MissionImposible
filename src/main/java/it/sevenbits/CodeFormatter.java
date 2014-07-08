@@ -1,35 +1,37 @@
+/**
+ * Having class for formatting code
+ */
 package it.sevenbits;
 
 import java.io.IOException;
 
 /**
- * The class is used for java-code formatting
+ * The class is used for java-code formatting.
  * @author Alexey Nikitin
  */
 public class CodeFormatter {
     /**
      * @value offsetSize  size of offset from begin of string
-     * @value offsetSymb  symbol for using offset
      */
     private final int offsetSize = 4;
+    /**
+     * @value offsetSymb  symbol for using offset
+     */
     private final char offsetSymb = ' ';
-    public CodeFormatter() {
-
-    }
 
     /**
      * Method reads symbols from input stream, transform them
      * to the correct style of java-code and push result to the
-     * output stream
+     * output stream.
      * @param  in  Input Stream
      * @param out Output Stream
      */
-    public void format(InStream in, OutStream out) {
+    public void format(final InStream in, final OutStream out) {
         if (in == null) {
             throw new InputStreamException("Null input stream");
         }
         if (out == null) {
-            throw new InputStreamException("Null output stream");
+            throw new OutputStreamException("Null output stream");
         }
 
         char curSymb;
@@ -42,7 +44,7 @@ public class CodeFormatter {
 
         while ((curSymb = in.getSymbol()) != (char) -1) {
             switch (curSymb) {
-                case ' ': {
+                case ' ':
                     if (preparedFor) {
                         forBefore = true;
                         preparedFor = false;
@@ -52,8 +54,7 @@ public class CodeFormatter {
                     }
                     bufString += ' ';
                     break;
-                }
-                case ';': {
+                case ';':
                     if (!forBefore) {
                         transBefore = true;
                         bufString += ';';
@@ -63,15 +64,13 @@ public class CodeFormatter {
                         bufString += ";";
                     }
                     break;
-                }
-                case '{': {
+                case '{':
                     offset++;
                     transBefore = true;
                     bufString += '{';
                     bufString = recordInStream(bufString, out, offset);
                     continue;
-                }
-                case '}': {
+                case '}':
                     if (!isEmpty(bufString)) {
                         recordInStream(bufString, out, offset);
                     }
@@ -82,8 +81,7 @@ public class CodeFormatter {
                     bufString += '}';
                     bufString = recordInStream(bufString, out, offset);
                     continue;
-                }
-                case '(': {
+                case '(':
                     if (preparedFor) {
                         forBefore = true;
                         preparedFor = false;
@@ -91,35 +89,29 @@ public class CodeFormatter {
                     roundBrackets++;
                     bufString += '(';
                     break;
-                }
-                case ')': {
+                case ')':
                     roundBrackets--;
                     if (forBefore && roundBrackets == 0) {
                         forBefore = false;
                     }
                     bufString += ')';
                     break;
-                }
-                case '\r': {
+                case '\r':
                     continue;
-                }
-                case '\n': {
+                case '\n':
                     if (transBefore) {
                         continue;
                     }
                     transBefore = true;
                     bufString = recordInStream(bufString, out, offset);
                     continue;
-                }
-                case 'r': {
+                case 'r':
                     preparedFor = isFor(bufString);
                     bufString += 'r';
                     break;
-                }
-                default: {
+                default:
                     bufString += curSymb;
                     break;
-                }
             }
             if (curSymb != '\n' && transBefore) {
                 transBefore = false;
@@ -136,40 +128,55 @@ public class CodeFormatter {
         try {
             out.closeStream();
         } catch (IOException e) {
-            throw new OutputStreamException("Problem with closure output stream");
+            throw new OutputStreamException("Problem with closure output "
+                    + "stream");
         }
     }
 
-    private boolean isEmpty(String str) {
+    /**
+     * Checks if in string only offsetSymb and '\n'.
+     * @param str string for check
+     * @return true if is str only offsetSymb
+     */
+    private boolean isEmpty(final String str) {
         for (int i = 0; i < str.length(); i++) {
             char symb = str.charAt(i);
-            if (symb != ' ' && symb != '\n') {
+            if (symb != offsetSymb && symb != '\n') {
                 return false;
             }
         }
         return true;
     }
 
-    private String recordInStream(String str, OutStream stream, int offset) {
-        str += '\n';
-        recordString(str, stream);
-        str = "";
-        str = addSpaces(str, offset);
-        return str;
+    /**
+     * Records String in output stream and adds offset to the next string.
+     * @param str input string
+     * @param stream output stream
+     * @param offset quantity of offset
+     * @return string with spaces
+     */
+    private String recordInStream(final String str, final OutStream stream,
+                                  final int offset) {
+        String rec = str;
+        rec += '\n';
+        recordString(rec, stream);
+        rec = "";
+        rec = addSpaces(str, offset);
+        return rec;
     }
 
     /**
-     * Checks on control construction in the end of input string
+     * Checks on control construction in the end of input string.
      * @param str input string
      * @return true if last 2-3 symbols is "fo" or " fo"
      */
-    private boolean isFor(String str) {
+    private boolean isFor(final String str) {
         if (str.length() < 2) {
             return false;
         }
         int len = str.length();
         String s = str.substring(len - 2, len);
-        if(s.equals("fo") && len == 2) {
+        if (s.equals("fo") && len == 2) {
             return true;
         }
         if (len > 2) {
@@ -182,33 +189,46 @@ public class CodeFormatter {
     }
 
     /**
-     * Records string into stream
-     * @param bufString input string
+     * Records string into stream.
+     * @param str input string
      * @param out stream
      */
-    private void recordString(String bufString, OutStream out) {
-        for(int i = 0; i < bufString.length(); i++) {
-            out.recordSymbol(bufString.charAt(i));
+    private void recordString(final String str, final OutStream out) {
+        for (int i = 0; i < str.length(); i++) {
+            out.recordSymbol(str.charAt(i));
         }
     }
 
     /**
-     * Add offset symbols to input string
+     * Add offset symbols to input string.
      * @param str input string
      * @param offset amount of offset
      * @return new string
      */
-    private String addSpaces(String str, int offset) {
+    private String addSpaces(final String str, final int offset) {
+        String rec = str;
         for (int i = 0; i < this.offsetSize * offset; i++) {
-            str += this.offsetSymb;
+            rec += this.offsetSymb;
         }
-        return str;
+        return rec;
     }
 }
 
+
+/**
+ * Class for problems with files.
+ */
 class FileException extends RuntimeException {
+    /**
+     * Message with cause of problem.
+     */
     private String msg;
-    public FileException(String couse) {
+
+    /**
+     * Constructor.
+     * @param couse New cause of problem
+     */
+    public FileException(final String couse) {
         msg = couse;
     }
 

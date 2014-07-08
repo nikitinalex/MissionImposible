@@ -5,42 +5,44 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * Interface for input stream
+ * Interface for input stream.
  */
 public interface InStream extends Stream {
     /**
-     * Reads one symbol
+     * Reads one symbol.
      * @return symbol from stream or -1 if the end of file is distinguished
      */
-    public char getSymbol();
+    char getSymbol();
 }
 
 /**
- * Input Stream based on file
+ * Input Stream based on file.
  */
 class FileInStream implements InStream {
     /**
-     * fileName Name of file stream
-     * fileStream Stream itself
+     * fileName Name of file stream.
      */
     private String fileName;
+    /**
+     * fileStream Stream itself.
+     */
     private FileInputStream fileStream;
 
     /**
-     * Constructing stream by file name
-     * @param fileName - name of file for stream
+     * Constructing stream by file name.
+     * @param newFileName - name of file for stream
      */
-    public FileInStream(String fileName) {
-        this.fileName = fileName;
+    public FileInStream(final String newFileName) {
+        this.fileName = newFileName;
         try {
-            fileStream = new FileInputStream(fileName);
+            fileStream = new FileInputStream(newFileName);
         } catch (FileNotFoundException e) {
             throw new FileProblem("File can not be opened");
         }
     }
 
     /**
-     * Getter for name of file stream
+     * Getter for name of file stream.
      * @return fileName
      */
     public String getFileName() {
@@ -74,11 +76,11 @@ class FileInStream implements InStream {
 }
 
 /**
- * Input Stream based on single string
+ * Input Stream based on single string.
  */
 class StringInStream implements InStream {
     /**
-     * streamString Stream itself
+     * streamString Stream itself.
      */
     private String streamString;
     /**
@@ -86,8 +88,12 @@ class StringInStream implements InStream {
      */
     private int pointer = 0;
 
-    public StringInStream(String streamString) {
-        this.streamString = streamString;
+    /**
+     * Constructor.
+     * @param streamStr Stream itself
+     */
+    public StringInStream(final String streamStr) {
+        this.streamString = streamStr;
     }
 
     @Override

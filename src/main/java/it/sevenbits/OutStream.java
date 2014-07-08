@@ -6,34 +6,36 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * Interface for output stream
+ * Interface for output stream.
  */
 public interface OutStream extends Stream {
     /**
-     * Writes symbol into stream
+     * Writes symbol into stream.
      * @param newSymb Symbol for record
      */
-    public void recordSymbol(char newSymb);
+    void recordSymbol(char newSymb);
 }
 
 /**
- * Class for output stream by file
+ * Class for output stream by file.
  */
 class FileOutStream implements OutStream {
 
     /**
-     * fileName Name of file
-     * fileStream Stream itself
+     * fileName Name of file.
      */
     private String fileName;
+    /**
+     * fileStream Stream itself.
+     */
     private FileOutputStream fileStream;
 
     /**
-     * Constructor by the name
-     * @param fileName name of file
+     * Constructor by the name.
+     * @param newFileName name of file
      */
-    public FileOutStream(String fileName) {
-        this.fileName = fileName;
+    public FileOutStream(final String newFileName) {
+        this.fileName = newFileName;
         try {
             fileStream = new FileOutputStream(this.fileName);
         } catch (FileNotFoundException e) {
@@ -42,7 +44,7 @@ class FileOutStream implements OutStream {
     }
 
     /**
-     * Getter
+     * Getter.
      * @return name of file
      */
     public String getFileName() {
@@ -60,7 +62,7 @@ class FileOutStream implements OutStream {
     }
 
     @Override
-    public void recordSymbol(char newSymb) {
+    public void recordSymbol(final char newSymb) {
         try {
             fileStream.write((int) newSymb);
         } catch (IOException e) {
@@ -70,27 +72,29 @@ class FileOutStream implements OutStream {
 }
 
 /**
- * Class for stream or cover for String
+ * Class for stream or cover for String.
  */
 class StringOutStream implements OutStream {
     /**
-     * outStringStream Stream itself
-     * pointer Pointer on current symbol in stream
+     * Stream itself.
      */
     private StringBuilder outStringStream;
+    /**
+     * Pointer on current symbol in stream.
+     */
     private int pointer;
 
     /**
-     * Constructor
+     * Constructor.
      * @param workingStream Stream
      */
-    public StringOutStream(StringBuilder workingStream) {
+    public StringOutStream(final StringBuilder workingStream) {
         outStringStream = workingStream;
         pointer = outStringStream.length() - 1;
     }
 
     @Override
-    public void recordSymbol(char newSymb) {
+    public void recordSymbol(final char newSymb) {
         outStringStream.append(newSymb);
         pointer++;
     }

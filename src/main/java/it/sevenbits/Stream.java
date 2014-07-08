@@ -3,21 +3,22 @@ package it.sevenbits;
 import java.io.IOException;
 
 /**
- * Interface for any Streams
+ * Interface for any Streams.
  */
+
 public interface Stream {
     /**
-     * Closes Stream
+     * Closes Stream.
      * @return true if close is success
      * @throws IOException
      */
-    public boolean closeStream() throws IOException;
+    boolean closeStream() throws IOException;
 }
 
 class InputStreamException extends RuntimeException {
     private String msg;
 
-    public InputStreamException (String message) {
+    public InputStreamException(final String message) {
         this.msg = message;
     }
 
@@ -30,7 +31,7 @@ class InputStreamException extends RuntimeException {
 class OutputStreamException extends RuntimeException {
     private String msg;
 
-    public OutputStreamException (String message) {
+    public OutputStreamException(final String message) {
         this.msg = message;
     }
 
@@ -40,20 +41,20 @@ class OutputStreamException extends RuntimeException {
     }
 }
 
-/**
- * Class exception using for problems with file streams
- */
+    /**
+    * Class exception using for problems with file streams.
+    */
 class FileProblem extends RuntimeException {
     /**
-     * Message of problem
+     * Message of problem.
      */
     private String msg;
 
     /**
-     * Constructor
-     * @param message
+     * Constructor.
+     * @param message Problem message
      */
-    public FileProblem(String message) {
+    public FileProblem(final String message) {
         this.msg = message;
     }
 
