@@ -1,9 +1,8 @@
-/**
- * Having class for formatting code
- */
 package it.sevenbits;
 
-import java.io.IOException;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 
 /**
  * The class is used for java-code formatting.
@@ -20,18 +19,39 @@ public class CodeFormatter {
     private final char offsetSymb = ' ';
 
     /**
+     * It makes logs.
+     */
+    private Logger log = null;
+
+    /**
+     * Default constructor.
+     */
+    CodeFormatter() {
+        PropertyConfigurator.configure(Constants.logFile);
+        log = Logger.getLogger(CodeFormatter.class);
+    }
+
+    /**
      * Method reads symbols from input stream, transform them
      * to the correct style of java-code and push result to the
      * output stream.
      * @param  in  Input Stream
      * @param out Output Stream
+     * @throws StreamException if rises some problem with input or
+     * output streams
+     * @throws FormatterException if rises incorrect symbols
      */
-    public void format(final InStream in, final OutStream out) throws StreamException, FormatterException {
+    public final void format(final InStream in, final OutStream out)
+            throws StreamException, FormatterException {
         if (in == null) {
-            throw new FormatterException("Null input stream");
+            String msg = "Null input stream";
+            log.error(msg);
+            throw new FormatterException(msg);
         }
         if (out == null) {
-            throw new FormatterException("Null output stream");
+            String msg = "Null output stream";
+            log.error(msg);
+            throw new FormatterException(msg);
         }
 
         char curSymb = 0;
@@ -42,93 +62,99 @@ public class CodeFormatter {
         int roundBrackets = 0;
         String bufString = new String("");
 
-        while (!in.IsEnd()) {
-            try {
-                curSymb = in.getSymbol();
-            } catch (StreamException e) {
-                in.close();
-                out.close();
-                throw new FormatterException("Symbol trouble");
-            }
-            switch (curSymb) {
-                case ' ':
-                    if (preparedFor) {
-                        forBefore = true;
-                        preparedFor = false;
-                    }
-                    if (transBefore) {
-                        continue;
-                    }
-                    bufString += ' ';
-                    break;
-                case ';':
-                    if (!forBefore) {
+        try {
+            while (!in.isEnd()) {
+                try {
+                    curSymb = in.getSymbol();
+                } catch (StreamException e) {
+                    in.close();
+                    out.close();
+                    String msg = "Symbol trouble";
+                    log.error(msg);
+                    throw new FormatterException(msg);
+                }
+                switch (curSymb) {
+                    case ' ':
+                        if (preparedFor) {
+                            forBefore = true;
+                            preparedFor = false;
+                        }
+                        if (transBefore) {
+                            continue;
+                        }
+                        bufString += ' ';
+                        break;
+                    case ';':
+                        if (!forBefore) {
+                            transBefore = true;
+                            bufString += ';';
+                            bufString = recordInStream(bufString, out, offset);
+                            continue;
+                        } else {
+                            bufString += ";";
+                        }
+                        break;
+                    case '{':
+                        offset++;
                         transBefore = true;
-                        bufString += ';';
+                        bufString += '{';
                         bufString = recordInStream(bufString, out, offset);
                         continue;
-                    } else {
-                        bufString += ";";
-                    }
-                    break;
-                case '{':
-                    offset++;
-                    transBefore = true;
-                    bufString += '{';
-                    bufString = recordInStream(bufString, out, offset);
-                    continue;
-                case '}':
-                    if (!isEmpty(bufString)) {
-                        recordInStream(bufString, out, offset);
-                    }
-                    bufString = "";
-                    offset--;
-                    transBefore = true;
-                    bufString = addSpaces(bufString, offset);
-                    bufString += '}';
-                    bufString = recordInStream(bufString, out, offset);
-                    continue;
-                case '(':
-                    if (preparedFor) {
-                        forBefore = true;
-                        preparedFor = false;
-                    }
-                    roundBrackets++;
-                    bufString += '(';
-                    break;
-                case ')':
-                    roundBrackets--;
-                    if (forBefore && roundBrackets == 0) {
-                        forBefore = false;
-                    }
-                    bufString += ')';
-                    break;
-                case '\r':
-                    continue;
-                case '\n':
-                    if (transBefore) {
+                    case '}':
+                        if (!isEmpty(bufString)) {
+                            recordInStream(bufString, out, offset);
+                        }
+                        bufString = "";
+                        offset--;
+                        transBefore = true;
+                        bufString = addSpaces(bufString, offset);
+                        bufString += '}';
+                        bufString = recordInStream(bufString, out, offset);
                         continue;
-                    }
-                    transBefore = true;
-                    bufString = recordInStream(bufString, out, offset);
-                    continue;
-                case 'r':
-                    preparedFor = isFor(bufString);
-                    bufString += 'r';
-                    break;
-                default:
-                    bufString += curSymb;
-                    break;
+                    case '(':
+                        if (preparedFor) {
+                            forBefore = true;
+                            preparedFor = false;
+                        }
+                        roundBrackets++;
+                        bufString += '(';
+                        break;
+                    case ')':
+                        roundBrackets--;
+                        if (forBefore && roundBrackets == 0) {
+                            forBefore = false;
+                        }
+                        bufString += ')';
+                        break;
+                    case '\r':
+                        continue;
+                    case '\n':
+                        if (transBefore) {
+                            continue;
+                        }
+                        transBefore = true;
+                        bufString = recordInStream(bufString, out, offset);
+                        continue;
+                    case 'r':
+                        preparedFor = isFor(bufString);
+                        bufString += 'r';
+                        break;
+                    default:
+                        bufString += curSymb;
+                        break;
+                }
+                if (curSymb != '\n' && transBefore) {
+                    transBefore = false;
+                }
             }
-            if (curSymb != '\n' && transBefore) {
-                transBefore = false;
-            }
+        } finally {
+            in.close();
+            out.close();
         }
         if (bufString.equals("")) {
             out.writeString(bufString);
         }
-        in.close();
-        out.close();
+
     }
 
     /**
@@ -152,18 +178,15 @@ public class CodeFormatter {
      * @param stream output stream
      * @param offset quantity of offset
      * @return string with spaces
+     * @throws StreamException if rises some problem with output stream
      */
     private String recordInStream(final String str, final OutStream stream,
-                                  final int offset) {
+                                  final int offset) throws StreamException {
         String rec = str;
         rec += '\n';
-        try {
-            stream.writeString(rec);
-        } catch (StreamException e) {
-            e.printStackTrace();
-        }
+        stream.writeString(rec);
         rec = "";
-        rec = addSpaces(str, offset);
+        rec = addSpaces(rec, offset);
         return rec;
     }
 
@@ -171,17 +194,24 @@ public class CodeFormatter {
      * Checks on control construction in the end of input string.
      * @param str input string
      * @return true if last 2-3 symbols is "fo" or " fo"
+     * 3 is not magic number
      */
     private boolean isFor(final String str) {
-        if (str.length() < 2) {
+        //Если for начинается с начала строки без
+        // пробелов
+        int fromBegin = 2;
+        //Если перед for стоит пробел
+        int spaceBefore = 3;
+        if (str.length() < fromBegin) {
             return false;
         }
         int len = str.length();
-        String s = str.substring(len - 2, len);
-        if (s.equals("fo") && len == 2) {
+        String s = str.substring(len - fromBegin, len);
+        if (s.equals("fo") && len == fromBegin) {
             return true;
         }
-        if (len > 2) {
+        s = str.substring(len - spaceBefore, len);
+        if (len > fromBegin) {
             if (s.equals(" fo")) {
                 return true;
             }
@@ -202,29 +232,5 @@ public class CodeFormatter {
             rec += this.offsetSymb;
         }
         return rec;
-    }
-}
-
-
-/**
- * Class for problems with files.
- */
-class FileException extends RuntimeException {
-    /**
-     * Message with cause of problem.
-     */
-    private String msg;
-
-    /**
-     * Constructor.
-     * @param couse New cause of problem
-     */
-    public FileException(final String couse) {
-        msg = couse;
-    }
-
-    @Override
-    public String getMessage() {
-        return msg;
     }
 }

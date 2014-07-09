@@ -1,5 +1,8 @@
 package it.sevenbits;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -43,15 +46,31 @@ class FileInStream implements InStream {
     private FileInputStream fileStream;
 
     /**
+     * Makes log records.
+     */
+    private Logger log = null;
+
+    /**
      * Constructing stream by file name.
      * @param newFileName - name of file for stream
+     * @throws StreamException if name is null or file
+     * doesn't exists or something like that
      */
     public FileInStream(final String newFileName) throws StreamException {
         this.fileName = newFileName;
+        PropertyConfigurator.configure(Constants.logFile);
+        log = Logger.getLogger(FileInStream.class);
+        if (newFileName == null) {
+            String msg = "File is not available or corrupted";
+            log.error(msg);
+            throw new StreamException(msg);
+        }
         try {
             fileStream = new FileInputStream(newFileName);
         } catch (FileNotFoundException e) {
-            throw new StreamException("File is not available or corrupted");
+            String msg = "File is not available or corrupted";
+            log.error(msg);
+            throw new StreamException(msg);
         }
     }
 
@@ -61,7 +80,8 @@ class FileInStream implements InStream {
         try {
             res = (char) fileStream.read();
         } catch (IOException e) {
-            throw new StreamException("Stream is not available");
+            log.error(Constants.streamIsNotAvailable);
+            throw new StreamException(Constants.streamIsNotAvailable);
         }
         return res;
     }
@@ -70,12 +90,13 @@ class FileInStream implements InStream {
     public boolean isEnd() throws StreamException {
         try {
             if (fileStream.available() > 0) {
-                return true;
+                return false;
             }
         } catch (IOException e) {
-            throw new StreamException("Stream is not available");
+            log.error(Constants.streamIsNotAvailable);
+            throw new StreamException(Constants.streamIsNotAvailable);
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -83,7 +104,8 @@ class FileInStream implements InStream {
         try {
             fileStream.close();
         } catch (IOException e) {
-            throw new StreamException("Stream is not available");
+            log.error(Constants.streamIsNotAvailable);
+            throw new StreamException(Constants.streamIsNotAvailable);
         }
     }
 }
@@ -101,20 +123,31 @@ class StringInStream implements InStream {
      */
     private int pointer = 0;
 
+    /**
+     * Checks on closure of stream.
+     */
     private boolean isClose = false;
+
+    /**
+     * Makes log records.
+     */
+    private Logger log = null;
 
     /**
      * Constructor.
      * @param streamStr Stream itself
      */
     public StringInStream(final String streamStr) {
+        PropertyConfigurator.configure(Constants.logFile);
+        log = Logger.getLogger(StringInStream.class);
         this.streamString = streamStr;
     }
 
     @Override
     public char getSymbol() throws StreamException {
         if (streamString == null || isClose) {
-            throw new StreamException("Stream is not available");
+            log.error(Constants.streamIsNotAvailable);
+            throw new StreamException(Constants.streamIsNotAvailable);
         }
 
         if (pointer != streamString.length()) {
@@ -126,7 +159,8 @@ class StringInStream implements InStream {
     @Override
     public boolean isEnd() throws StreamException {
         if (streamString == null || isClose) {
-            throw new StreamException("Stream is not available");
+            log.error(Constants.streamIsNotAvailable);
+            throw new StreamException(Constants.streamIsNotAvailable);
         }
 
         if (pointer == streamString.length()) {
