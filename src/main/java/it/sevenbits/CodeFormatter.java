@@ -26,7 +26,7 @@ public class CodeFormatter {
     /**
      * Default constructor.
      */
-    CodeFormatter() {
+    public CodeFormatter() {
         PropertyConfigurator.configure(Constants.logFile);
         log = Logger.getLogger(CodeFormatter.class);
     }
@@ -106,6 +106,11 @@ public class CodeFormatter {
                         }
                         bufString = "";
                         offset--;
+                        if (offset < 0) {
+                            String msg = "Too much close brackets";
+                            log.error(msg);
+                            throw new NotEnoughBracketsException(msg);
+                        }
                         transBefore = true;
                         bufString = addSpaces(bufString, offset);
                         bufString += '}';
@@ -146,12 +151,18 @@ public class CodeFormatter {
                 if (curSymb != '\n' && transBefore) {
                     transBefore = false;
                 }
+
+            }
+            if (offset > 0) {
+                String msg = "Too much open brackets";
+                log.error(msg);
+                throw new NotEnoughBracketsException(msg);
             }
         } finally {
             in.close();
             out.close();
         }
-        if (bufString.equals("")) {
+        if (!bufString.equals("")) {
             out.writeString(bufString);
         }
 

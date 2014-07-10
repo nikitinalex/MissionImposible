@@ -1,1 +1,17 @@
 
+ERROR: 10.07.2014 21:17 Too much open brackets
+ERROR: 10.07.2014 21:17 Too much open brackets
+ERROR: 10.07.2014 22:03 Stream is not available
+ERROR: 10.07.2014 22:03 Stream is not available
+ERROR: 10.07.2014 22:04 Stream is not available
+ERROR: 10.07.2014 22:11 Stream is not available
+ERROR: 10.07.2014 22:11 Null output stream
+ERROR: 10.07.2014 22:11 Too much open brackets
+ERROR: 10.07.2014 22:13 Too much open brackets
+ERROR: 10.07.2014 22:13 Too mush close brackets
+ERROR: 10.07.2014 22:13 Too much open brackets
+ERROR: 10.07.2014 22:13 Too much close brackets
+ERROR: 10.07.2014 22:21 Stream is not available
+ERROR: 10.07.2014 22:21 Null output stream
+ERROR: 10.07.2014 22:21 Too much open brackets
+ERROR: 10.07.2014 22:21 Too much close brackets
