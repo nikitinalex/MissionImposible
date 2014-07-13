@@ -1,8 +1,8 @@
 package it.sevenbits;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,7 +18,7 @@ public class FileInStream implements InStream {
     /**
      * fileStream Stream itself.
      */
-    private FileInputStream fileStream;
+    private BufferedInputStream fileStream;
 
     /**
      * Makes log records.
@@ -33,7 +33,6 @@ public class FileInStream implements InStream {
      */
     public FileInStream(final String newFileName) throws StreamException {
         this.fileName = newFileName;
-        PropertyConfigurator.configure(Constants.logFile);
         log = Logger.getLogger(FileInStream.class);
         if (newFileName == null) {
             String msg = "File is not available or corrupted";
@@ -41,7 +40,8 @@ public class FileInStream implements InStream {
             throw new StreamException(msg);
         }
         try {
-            fileStream = new FileInputStream(newFileName);
+            fileStream = new BufferedInputStream(
+                    new FileInputStream(newFileName));
         } catch (FileNotFoundException e) {
             String msg = "File is not available or corrupted";
             log.error(msg);
@@ -51,14 +51,14 @@ public class FileInStream implements InStream {
 
     @Override
     public final char getSymbol() throws StreamException {
-        char res;
+        char result;
         try {
-            res = (char) fileStream.read();
+            result = (char) fileStream.read();
         } catch (IOException e) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
-        return res;
+        return result;
     }
 
     @Override
@@ -68,8 +68,8 @@ public class FileInStream implements InStream {
                 return false;
             }
         } catch (IOException e) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
         return true;
     }
@@ -79,8 +79,8 @@ public class FileInStream implements InStream {
         try {
             fileStream.close();
         } catch (IOException e) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
     }
 }

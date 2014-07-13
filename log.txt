@@ -15,3 +15,34 @@ ERROR: 10.07.2014 22:21 Stream is not available
 ERROR: 10.07.2014 22:21 Null output stream
 ERROR: 10.07.2014 22:21 Too much open brackets
 ERROR: 10.07.2014 22:21 Too much close brackets
+ERROR: 12.07.2014 13:12 Not enough program arguments
+ERROR: 12.07.2014 16:17 Stream is not available
+ERROR: 12.07.2014 16:17 Stream is not available
+ERROR: 12.07.2014 16:22 Too much close brackets
+ERROR: 12.07.2014 16:43 Too much open brackets
+ERROR: 12.07.2014 16:43 Too much close brackets
+ERROR: 12.07.2014 16:43 Null output stream
+ERROR: 12.07.2014 16:43 Stream is not available
+ERROR: 12.07.2014 16:43 Stream is not available
+ERROR: 12.07.2014 16:43 Too much open brackets
+ERROR: 12.07.2014 16:43 Too much close brackets
+ERROR: 12.07.2014 16:43 Null output stream
+ERROR: 12.07.2014 16:43 Stream is not available
+ERROR: 12.07.2014 16:43 Stream is not available
+ERROR: 13.07.2014 13:36 Too much open brackets
+ERROR: 13.07.2014 13:36 Too much close brackets
+ERROR: 13.07.2014 13:36 Null output stream
+ERROR: 13.07.2014 13:36 Stream is not available
+ERROR: 13.07.2014 13:36 Stream is not available
+ERROR: 13.07.2014 14:00 File is not available or corrupted
+ERROR: 13.07.2014 14:00 File is not available or corrupted
+ERROR: 13.07.2014 14:03 Too much open brackets
+ERROR: 13.07.2014 14:03 Too much close brackets
+ERROR: 13.07.2014 14:03 Null output stream
+ERROR: 13.07.2014 14:03 Stream is not available
+ERROR: 13.07.2014 14:03 Stream is not available
+ERROR: 13.07.2014 14:39 Too much open brackets
+ERROR: 13.07.2014 14:39 Too much close brackets
+ERROR: 13.07.2014 14:39 Null output stream
+ERROR: 13.07.2014 14:39 Stream is not available
+ERROR: 13.07.2014 14:39 Stream is not available

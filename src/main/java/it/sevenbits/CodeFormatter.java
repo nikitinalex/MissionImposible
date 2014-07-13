@@ -1,7 +1,6 @@
 package it.sevenbits;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 
 /**
@@ -14,9 +13,9 @@ public class CodeFormatter {
      */
     private final int offsetSize = 4;
     /**
-     * @value offsetSymb  symbol for using offset
+     * @value offsetSymbol  symbol for using offset
      */
-    private final char offsetSymb = ' ';
+    private final char offsetSymbol = ' ';
 
     /**
      * It makes logs.
@@ -27,7 +26,6 @@ public class CodeFormatter {
      * Default constructor.
      */
     public CodeFormatter() {
-        PropertyConfigurator.configure(Constants.logFile);
         log = Logger.getLogger(CodeFormatter.class);
     }
 
@@ -35,14 +33,13 @@ public class CodeFormatter {
      * Method reads symbols from input stream, transform them
      * to the correct style of java-code and push result to the
      * output stream.
-     * @param  in  Input Stream
+     *
+     * @param in  Input Stream
      * @param out Output Stream
-     * @throws StreamException if rises some problem with input or
-     * output streams
      * @throws FormatterException if rises incorrect symbols
      */
     public final void format(final InStream in, final OutStream out)
-            throws StreamException, FormatterException {
+            throws FormatterException {
         if (in == null) {
             String msg = "Null input stream";
             log.error(msg);
@@ -53,130 +50,165 @@ public class CodeFormatter {
             log.error(msg);
             throw new FormatterException(msg);
         }
-
-        char curSymb = 0;
-        boolean transBefore = false;
+        char currentSymbol;
+        boolean transferBefore = false;
+        //checks symbols on right position
+        //construction "for"
+        boolean[] forCheck = new boolean[Constants.FOR_LENGTH];
+        //First acceptable symbol before "for"
+        forCheck[0] = true;
+        boolean beginOfStream = true;
         boolean forBefore = false;
-        boolean preparedFor = false;
         int offset = 0;
         int roundBrackets = 0;
-        String bufString = new String("");
-
         try {
             while (!in.isEnd()) {
-                try {
-                    curSymb = in.getSymbol();
-                } catch (StreamException e) {
-                    in.close();
-                    out.close();
-                    String msg = "Symbol trouble";
-                    log.error(msg);
-                    throw new FormatterException(msg);
+                currentSymbol = in.getSymbol();
+                if (currentSymbol == '\r') {
+                    continue;
                 }
-                switch (curSymb) {
+                if (transferBefore) {
+                    if (currentSymbol != ' ' && currentSymbol != '}'
+                            && currentSymbol != '\n') {
+                        addSpaces(out, offset);
+                    }
+                }
+                if (beginOfStream) {
+                    if (currentSymbol == ' ') {
+                        continue;
+                    }
+                    beginOfStream = false;
+                }
+                switch (currentSymbol) {
                     case ' ':
-                        if (preparedFor) {
+                        if (isForBefore(forCheck, Constants.FOR_LENGTH)) {
                             forBefore = true;
-                            preparedFor = false;
                         }
-                        if (transBefore) {
+                        forCheck[0] = true;
+                        if (transferBefore) {
                             continue;
                         }
-                        bufString += ' ';
+                        out.writeSymbol(' ');
                         break;
                     case ';':
+                        out.writeSymbol(';');
                         if (!forBefore) {
-                            transBefore = true;
-                            bufString += ';';
-                            bufString = recordInStream(bufString, out, offset);
+                            out.writeSymbol('\n');
+                            transferBefore = true;
                             continue;
-                        } else {
-                            bufString += ";";
                         }
+                        forCheck[0] = true;
                         break;
                     case '{':
+                        forCheck[0] = true;
                         offset++;
-                        transBefore = true;
-                        bufString += '{';
-                        bufString = recordInStream(bufString, out, offset);
+                        out.writeSymbol('{');
+                        out.writeSymbol('\n');
+                        transferBefore = true;
                         continue;
                     case '}':
-                        if (!isEmpty(bufString)) {
-                            recordInStream(bufString, out, offset);
-                        }
-                        bufString = "";
+                        forCheck[0] = true;
                         offset--;
                         if (offset < 0) {
                             String msg = "Too much close brackets";
                             log.error(msg);
                             throw new NotEnoughBracketsException(msg);
                         }
-                        transBefore = true;
-                        bufString = addSpaces(bufString, offset);
-                        bufString += '}';
-                        bufString = recordInStream(bufString, out, offset);
+                        if (!transferBefore) {
+                            out.writeSymbol('\n');
+                        }
+                        addSpaces(out, offset);
+                        out.writeSymbol('}');
+                        out.writeSymbol('\n');
+                        transferBefore = true;
                         continue;
                     case '(':
-                        if (preparedFor) {
+                        if (isForBefore(forCheck, Constants.FOR_LENGTH)) {
                             forBefore = true;
-                            preparedFor = false;
                         }
                         roundBrackets++;
-                        bufString += '(';
+                        out.writeSymbol('(');
                         break;
                     case ')':
+                        forCheck[0] = true;
                         roundBrackets--;
                         if (forBefore && roundBrackets == 0) {
+                            for (int i = 0; i < Constants.FOR_LENGTH; i++) {
+                                forCheck[i] = false;
+                            }
                             forBefore = false;
                         }
-                        bufString += ')';
+                        out.writeSymbol(')');
                         break;
-                    case '\r':
-                        continue;
                     case '\n':
-                        if (transBefore) {
+                        if (transferBefore) {
                             continue;
                         }
-                        transBefore = true;
-                        bufString = recordInStream(bufString, out, offset);
+                        forCheck[0] = true;
+                        out.writeSymbol('\n');
+                        transferBefore = true;
                         continue;
+                    case 'f':
+                        checkConstructionSymbol(forCheck,
+                                Constants.FOR_LENGTH - 3);
+                        out.writeSymbol('f');
+                        break;
+                    case 'o':
+                        checkConstructionSymbol(forCheck,
+                                Constants.FOR_LENGTH - 2);
+                        out.writeSymbol('o');
+                        break;
                     case 'r':
-                        preparedFor = isFor(bufString);
-                        bufString += 'r';
+                        checkConstructionSymbol(forCheck,
+                                Constants.FOR_LENGTH - 1);
+                        out.writeSymbol('r');
                         break;
                     default:
-                        bufString += curSymb;
+                        out.writeSymbol(currentSymbol);
                         break;
                 }
-                if (curSymb != '\n' && transBefore) {
-                    transBefore = false;
+                if (currentSymbol != '\n' && transferBefore) {
+                    transferBefore = false;
                 }
-
             }
-            if (offset > 0) {
-                String msg = "Too much open brackets";
-                log.error(msg);
-                throw new NotEnoughBracketsException(msg);
-            }
-        } finally {
-            in.close();
-            out.close();
+        } catch (StreamException e) {
+            String msg = e.getMessage();
+            log.error(msg);
+            throw new FormatterException(msg);
         }
-        if (!bufString.equals("")) {
-            out.writeString(bufString);
+        if (offset > 0) {
+            String msg = "Too much open brackets";
+            log.error(msg);
+            throw new NotEnoughBracketsException(msg);
         }
-
     }
 
     /**
-     * Checks if in string only offsetSymb and '\n'.
-     * @param str string for check
-     * @return true if is str only offsetSymb
+     * If piece of "for"-construction previously then
+     * change next position on true.
+     * @param boolMas massive of correct positions
+     * @param length place to change value in boolMas
      */
-    private boolean isEmpty(final String str) {
-        for (int i = 0; i < str.length(); i++) {
-            char symb = str.charAt(i);
-            if (symb != offsetSymb && symb != '\n') {
+    private void checkConstructionSymbol(final boolean[] boolMas,
+                                         final int length) {
+        if (isForBefore(boolMas, length)) {
+            boolMas[length] = true;
+        }
+    }
+
+
+    /**
+     * Checks construction "for".
+     * @param mas checks position of characters
+     * @param length length which need to check (1, 2, 3 or 4)
+     * @return true if in mas all values is true
+     */
+    private boolean isForBefore(final boolean[] mas, final int length) {
+        for (int i = 0; i < length; i++) {
+            if (!mas[i]) {
+                for (int j = 0; j < i; j++) {
+                    mas[j] = false;
+                }
                 return false;
             }
         }
@@ -184,64 +216,16 @@ public class CodeFormatter {
     }
 
     /**
-     * Records String in output stream and adds offset to the next string.
-     * @param str input string
-     * @param stream output stream
-     * @param offset quantity of offset
-     * @return string with spaces
-     * @throws StreamException if rises some problem with output stream
-     */
-    private String recordInStream(final String str, final OutStream stream,
-                                  final int offset) throws StreamException {
-        String rec = str;
-        rec += '\n';
-        stream.writeString(rec);
-        rec = "";
-        rec = addSpaces(rec, offset);
-        return rec;
-    }
-
-    /**
-     * Checks on control construction in the end of input string.
-     * @param str input string
-     * @return true if last 2-3 symbols is "fo" or " fo"
-     * 3 is not magic number
-     */
-    private boolean isFor(final String str) {
-        //Если for начинается с начала строки без
-        // пробелов
-        int fromBegin = 2;
-        //Если перед for стоит пробел
-        int spaceBefore = 3;
-        if (str.length() < fromBegin) {
-            return false;
-        }
-        int len = str.length();
-        String s = str.substring(len - fromBegin, len);
-        if (s.equals("fo") && len == fromBegin) {
-            return true;
-        }
-        s = str.substring(len - spaceBefore, len);
-        if (len > fromBegin) {
-            if (s.equals(" fo")) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Add offset symbols to input string.
-     * @param str input string
+     * Add offset symbols to stream.
+     * @param stream stream for record
      * @param offset amount of offset
-     * @return new string
+     * @throws it.sevenbits.StreamException is stream
+     * cannot record some character or stream is null
      */
-    private String addSpaces(final String str, final int offset) {
-        String rec = str;
-        for (int i = 0; i < this.offsetSize * offset; i++) {
-            rec += this.offsetSymb;
+    private void addSpaces(final OutStream stream, final int offset)
+            throws StreamException {
+        for (int i = 0; i < offset * this.offsetSize; i++) {
+            stream.writeSymbol(this.offsetSymbol);
         }
-        return rec;
     }
 }

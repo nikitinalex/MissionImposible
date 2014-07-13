@@ -13,7 +13,7 @@ public class FormatterException extends Exception {
      * Constructor.
      * @param message cause of current problem
      */
-    FormatterException(final String message) {
+    public FormatterException(final String message) {
         this.msg = message;
     }
 

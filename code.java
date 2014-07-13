@@ -1,4 +1,5 @@
-class Time {
+            class Time {
+                public updateMinutes(){ for (int i=0;i<12;i++){minutes++;}}
 public int hours; public int minutes; public int seconds;
 public Time() {
 
@@ -10,7 +11,7 @@ if(hours != 0) hours=0; if(minutes != 0) minutes=0; if(seconds != 0) seconds=0;}
 
 public updateHoursTodo (){ do hours++; while(hours<12);}
 
-public updateMinutes(){ for (int i=0;i<12;i++){minutes++;}}
+
 
     public updateSeconds() {
         while(seconds<12) {

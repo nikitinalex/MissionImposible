@@ -1,7 +1,6 @@
 package it.sevenbits;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Class for stream or cover for String.
@@ -37,7 +36,6 @@ public class StringOutStream implements OutStream {
     //согласно сигнатуре не надо выбрасывать
     // исключения,но неплохо бы это делать
     // на случай, если size отрицателен
-        PropertyConfigurator.configure(Constants.logFile);
         log = Logger.getLogger(StringOutStream.class);
         if (size > 0) {
             outStringStream = new StringBuilder(size);
@@ -50,8 +48,8 @@ public class StringOutStream implements OutStream {
     @Override
     public final void writeSymbol(final char b) throws StreamException {
         if (outStringStream == null || isClosed) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
         if (pointer != streamSize) {
             outStringStream.append(b);
@@ -60,34 +58,10 @@ public class StringOutStream implements OutStream {
     }
 
     @Override
-    public final void writeString(final String str) throws StreamException {
-    //почему-то этот метод есть в двух
-    // имплементируемых классах, но нет
-    // в интерфейсе OutStream
-        if (str == null) {
-            String msg = "Output string is empty";
-            log.error(msg);
-            throw new StreamException(msg);
-        }
-        if (outStringStream == null) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
-        }
-        for (int i = 0; i < str.length(); i++) {
-            if (pointer != streamSize) {
-                outStringStream.append(str.charAt(i));
-                pointer++;
-            } else {
-                break;
-            }
-        }
-    }
-
-    @Override
     public final void close() throws StreamException {
         if (outStringStream == null) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
         isClosed = true;
         return;

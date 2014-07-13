@@ -1,7 +1,6 @@
 package it.sevenbits;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Input Stream based on single string.
@@ -28,25 +27,24 @@ public class StringInStream implements InStream {
 
     /**
      * Constructor.
-     * @param streamStr Stream itself
+     * @param newStreamString Stream itself
      */
-    public StringInStream(final String streamStr) {
-        PropertyConfigurator.configure(Constants.logFile);
+    public StringInStream(final String newStreamString) {
         log = Logger.getLogger(StringInStream.class);
-        this.streamString = streamStr;
+        this.streamString = newStreamString;
     }
 
     @Override
     public final char getSymbol() throws StreamException {
         if (streamString == null || isClose) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
 
         if (pointer != streamString.length()) {
-            char res = streamString.charAt(pointer);
+            char result = streamString.charAt(pointer);
             pointer++;
-            return res;
+            return result;
         }
         return (char) -1;
     }
@@ -54,8 +52,8 @@ public class StringInStream implements InStream {
     @Override
     public final boolean isEnd() throws StreamException {
         if (streamString == null || isClose) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
 
         if (pointer == streamString.length()) {

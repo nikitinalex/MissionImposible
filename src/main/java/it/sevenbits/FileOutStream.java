@@ -1,8 +1,8 @@
 package it.sevenbits;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class FileOutStream implements OutStream {
     /**
      * fileStream Stream itself.
      */
-    private FileOutputStream fileStream;
+    private BufferedOutputStream fileStream;
 
     /**
      * Makes log records.
@@ -33,10 +33,10 @@ public class FileOutStream implements OutStream {
      */
     public FileOutStream(final String newFileName) throws StreamException {
         this.fileName = newFileName;
-        PropertyConfigurator.configure(Constants.logFile);
         log = Logger.getLogger(FileOutStream.class);
         try {
-            fileStream = new FileOutputStream(this.fileName);
+            fileStream = new BufferedOutputStream(
+                    new FileOutputStream(this.fileName));
         } catch (FileNotFoundException e) {
             String msg = "File is not available or corrupted";
             log.error(msg);
@@ -45,30 +45,12 @@ public class FileOutStream implements OutStream {
     }
 
     @Override
-    public final void writeString(final String str) throws StreamException {
-        if (str == null) {
-            String msg = "Output string is empty";
-            log.error(msg);
-            throw new StreamException(msg);
-        }
-        try {
-            for (int i = 0; i < str.length(); i++) {
-                char recSym = str.charAt(i);
-                fileStream.write((int) recSym);
-            }
-        } catch (IOException e) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
-        }
-    }
-
-    @Override
     public final void close() throws StreamException {
         try {
             fileStream.close();
         } catch (IOException e) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
     }
 
@@ -77,8 +59,8 @@ public class FileOutStream implements OutStream {
         try {
             fileStream.write((int) b);
         } catch (IOException e) {
-            log.error(Constants.streamIsNotAvailable);
-            throw new StreamException(Constants.streamIsNotAvailable);
+            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
     }
 }

@@ -5,11 +5,11 @@ package it.sevenbits;
  */
 public class Constants {
     /**
-     * @value File of properties for log actions.
-     */
-    public static String logFile = "log4j.properties";
-    /**
      * @value String for stream corruption.
      */
-    public static String streamIsNotAvailable = "Stream is not available";
+    public static String STREAM_IS_NOT_AVAILABLE = "Stream is not available";
+    /**
+     * Length of construction "@for", where @ is any acceptable symbol.
+     */
+    public static int FOR_LENGTH = 4;
 }
