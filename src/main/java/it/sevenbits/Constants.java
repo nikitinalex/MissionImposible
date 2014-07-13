@@ -3,7 +3,7 @@ package it.sevenbits;
 /**
  * Class for some constants.
  */
-public class Constants {
+final class Constants {
     /**
      * @value String for stream corruption.
      */
@@ -12,4 +12,10 @@ public class Constants {
      * Length of construction "@for", where @ is any acceptable symbol.
      */
     public static int FOR_LENGTH = 4;
+
+    /**
+     * Close constructor.
+     */
+    private Constants() {
+    }
 }
