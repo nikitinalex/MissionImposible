@@ -4,21 +4,16 @@ package it.sevenbits;
  * Class exception for formatter actions.
  */
 public class FormatterException extends Exception {
-    /**
-     * Message of cause of problem.
-     */
-    private String msg;
 
     /**
      * Constructor.
      * @param message cause of current problem
      */
     public FormatterException(final String message) {
-        this.msg = message;
+        super(message);
     }
 
-    @Override
-    public final String getMessage() {
-        return msg;
+    public FormatterException(final Exception e) {
+        super(e);
     }
 }

@@ -9,15 +9,6 @@ import org.apache.log4j.Logger;
  */
 public class CodeFormatter {
     /**
-     * @value offsetSize  size of offset from begin of string
-     */
-    private final int offsetSize = 4;
-    /**
-     * @value offsetSymbol  symbol for using offset
-     */
-    private final char offsetSymbol = ' ';
-
-    /**
      * It makes logs.
      */
     private Logger log = null;
@@ -39,7 +30,7 @@ public class CodeFormatter {
      * @throws FormatterException if rises incorrect symbols
      */
     public final void format(final InStream in, final OutStream out)
-            throws FormatterException {
+        throws FormatterException {
         if (in == null) {
             String msg = "Null input stream";
             log.error(msg);
@@ -50,6 +41,8 @@ public class CodeFormatter {
             log.error(msg);
             throw new FormatterException(msg);
         }
+        final int offsetSize = Constants.OFFSET_SIZE;
+        final char offsetSymbol = Constants.OFFSET_SYMBOL;
         char currentSymbol;
         boolean transferBefore = false;
         //checks symbols on right position
@@ -69,8 +62,8 @@ public class CodeFormatter {
                 }
                 if (transferBefore) {
                     if (currentSymbol != ' ' && currentSymbol != '}'
-                            && currentSymbol != '\n') {
-                        addSpaces(out, offset);
+                        && currentSymbol != '\n') {
+                        addSpaces(out, offset, offsetSize, offsetSymbol);
                     }
                 }
                 if (beginOfStream) {
@@ -110,14 +103,12 @@ public class CodeFormatter {
                         forCheck[0] = true;
                         offset--;
                         if (offset < 0) {
-                            String msg = "Too much close brackets";
-                            log.error(msg);
-                            throw new NotEnoughBracketsException(msg);
+                            throw new NotEnoughBracketsException("Too much close brackets");
                         }
                         if (!transferBefore) {
                             out.writeSymbol('\n');
                         }
-                        addSpaces(out, offset);
+                        addSpaces(out, offset, offsetSize, offsetSymbol);
                         out.writeSymbol('}');
                         out.writeSymbol('\n');
                         transferBefore = true;
@@ -149,19 +140,16 @@ public class CodeFormatter {
                         transferBefore = true;
                         continue;
                     case 'f':
-                        checkConstructionSymbol(forCheck,
-                                Constants.FOR_LENGTH - 3);
-                        out.writeSymbol('f');
+                        checkConstructionSymbolAndRecord(
+                            forCheck, 1, out, 'f');
                         break;
                     case 'o':
-                        checkConstructionSymbol(forCheck,
-                                Constants.FOR_LENGTH - 2);
-                        out.writeSymbol('o');
+                        checkConstructionSymbolAndRecord(
+                            forCheck, 2, out, 'o');
                         break;
                     case 'r':
-                        checkConstructionSymbol(forCheck,
-                                Constants.FOR_LENGTH - 1);
-                        out.writeSymbol('r');
+                        checkConstructionSymbolAndRecord(
+                            forCheck, Constants.FOR_LENGTH - 1, out, 'r');
                         break;
                     default:
                         out.writeSymbol(currentSymbol);
@@ -177,9 +165,7 @@ public class CodeFormatter {
             throw new FormatterException(msg);
         }
         if (offset > 0) {
-            String msg = "Too much open brackets";
-            log.error(msg);
-            throw new NotEnoughBracketsException(msg);
+            throw new NotEnoughBracketsException("Too much open brackets");
         }
     }
 
@@ -188,12 +174,16 @@ public class CodeFormatter {
      * change next position on true.
      * @param boolMas massive of correct positions
      * @param length place to change value in boolMas
+     * @param out stream for write
+     * @param c write symbol
      */
-    private void checkConstructionSymbol(final boolean[] boolMas,
-                                         final int length) {
+    private void checkConstructionSymbolAndRecord(
+        final boolean[] boolMas, final int length, final OutStream out,
+        final char c) throws StreamException {
         if (isForBefore(boolMas, length)) {
             boolMas[length] = true;
         }
+        out.writeSymbol(c);
     }
 
 
@@ -222,10 +212,11 @@ public class CodeFormatter {
      * @throws it.sevenbits.StreamException is stream
      * cannot record some character or stream is null
      */
-    private void addSpaces(final OutStream stream, final int offset)
+    private void addSpaces(final OutStream stream, final int offset,
+        final int offsetSize, final char offsetSymbol)
             throws StreamException {
-        for (int i = 0; i < offset * this.offsetSize; i++) {
-            stream.writeSymbol(this.offsetSymbol);
+        for (int i = 0; i < offset * offsetSize; i++) {
+            stream.writeSymbol(offsetSymbol);
         }
     }
 }

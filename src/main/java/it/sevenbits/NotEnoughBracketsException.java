@@ -9,7 +9,11 @@ public class NotEnoughBracketsException extends FormatterException {
      *
      * @param message cause of current problem
      */
-    NotEnoughBracketsException(final String message) {
+    public NotEnoughBracketsException(final String message) {
         super(message);
+    }
+
+    public NotEnoughBracketsException(final Exception e) {
+        super(e);
     }
 }

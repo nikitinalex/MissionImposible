@@ -36,11 +36,10 @@ public class FileOutStream implements OutStream {
         log = Logger.getLogger(FileOutStream.class);
         try {
             fileStream = new BufferedOutputStream(
-                    new FileOutputStream(this.fileName));
+                new FileOutputStream(this.fileName));
         } catch (FileNotFoundException e) {
-            String msg = "File is not available or corrupted";
-            log.error(msg);
-            throw new StreamException(msg);
+            log.error("File is not available or corrupted");
+            throw new StreamException(e);
         }
     }
 
@@ -50,7 +49,7 @@ public class FileOutStream implements OutStream {
             fileStream.close();
         } catch (IOException e) {
             log.error(Constants.STREAM_IS_NOT_AVAILABLE);
-            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(e);
         }
     }
 
@@ -60,7 +59,7 @@ public class FileOutStream implements OutStream {
             fileStream.write((int) b);
         } catch (IOException e) {
             log.error(Constants.STREAM_IS_NOT_AVAILABLE);
-            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(e);
         }
     }
 }

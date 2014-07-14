@@ -32,7 +32,7 @@ public class StringOutStream implements OutStream {
      * Constructor.
      * @param size Size of stream
      */
-    public StringOutStream(final int size) {
+    public StringOutStream(final int size) throws StreamException {
     //согласно сигнатуре не надо выбрасывать
     // исключения,но неплохо бы это делать
     // на случай, если size отрицателен
@@ -41,14 +41,13 @@ public class StringOutStream implements OutStream {
             outStringStream = new StringBuilder(size);
             streamSize = size;
         } else {
-            log.error("Wrong size");
+            throw new StreamException("Size of stream isn't positive");
         }
     }
 
     @Override
     public final void writeSymbol(final char b) throws StreamException {
         if (outStringStream == null || isClosed) {
-            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
             throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
         if (pointer != streamSize) {
@@ -60,7 +59,6 @@ public class StringOutStream implements OutStream {
     @Override
     public final void close() throws StreamException {
         if (outStringStream == null) {
-            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
             throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
         isClosed = true;

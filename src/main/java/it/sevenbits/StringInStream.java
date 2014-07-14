@@ -37,7 +37,6 @@ public class StringInStream implements InStream {
     @Override
     public final char getSymbol() throws StreamException {
         if (streamString == null || isClose) {
-            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
             throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
 
@@ -52,7 +51,6 @@ public class StringInStream implements InStream {
     @Override
     public final boolean isEnd() throws StreamException {
         if (streamString == null || isClose) {
-            log.error(Constants.STREAM_IS_NOT_AVAILABLE);
             throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
         }
 

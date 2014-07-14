@@ -12,7 +12,7 @@ public class FormatterTests extends Assert {
     }
 
     @Test
-    public void classDeclaration() {
+    public void classDeclaration() throws StreamException {
         InStream in = new StringInStream("class Enough{}");
         OutStream out = new StringOutStream(20);
         try {
@@ -25,7 +25,7 @@ public class FormatterTests extends Assert {
     }
 
     @Test
-    public void classWithMethods() {
+    public void classWithMethods() throws StreamException {
         InStream in = new StringInStream("class AnotherOneClass{public int field;" +
                 "\nprotected boolean testMethod   (){int k++;}}");
         OutStream out = new StringOutStream(200);
@@ -40,7 +40,7 @@ public class FormatterTests extends Assert {
     }
 
     @Test
-    public void forCheck() {
+    public void forCheck() throws StreamException{
         InStream in = new StringInStream("for(int i=0;i<10;i++){ for(int j = 0; j<10;j++)i++;}");
         OutStream out = new StringOutStream(200);
         try {
@@ -53,7 +53,7 @@ public class FormatterTests extends Assert {
     }
 
     @Test
-    public void alrightBrackets() {
+    public void alrightBrackets() throws StreamException {
         InStream in = new StringInStream("{{{{}}}}");
         OutStream out = new StringOutStream(200);
         try {
@@ -65,7 +65,7 @@ public class FormatterTests extends Assert {
     }
 
     @Test(expected = FormatterException.class)
-    public void nullInTest() throws FormatterException {
+    public void nullInTest() throws FormatterException, StreamException {
         InStream in = new StringInStream(null);
         OutStream out = new StringOutStream(20);
         formatter.format(in, out);
@@ -79,14 +79,14 @@ public class FormatterTests extends Assert {
     }
 
     @Test(expected = NotEnoughBracketsException.class)
-    public void wrongOpenBrackets() throws FormatterException {
+    public void wrongOpenBrackets() throws FormatterException, StreamException {
         InStream in = new StringInStream("{{{{");
         OutStream out = new StringOutStream(20);
         formatter.format(in, out);
     }
 
     @Test(expected = NotEnoughBracketsException.class)
-    public void wrongCloseBrackets() throws FormatterException {
+    public void wrongCloseBrackets() throws FormatterException, StreamException {
         InStream in = new StringInStream("{{{{{}}}}}}");
         OutStream out = new StringOutStream(20);
         formatter.format(in, out);

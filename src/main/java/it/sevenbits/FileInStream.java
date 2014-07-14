@@ -35,17 +35,14 @@ public class FileInStream implements InStream {
         this.fileName = newFileName;
         log = Logger.getLogger(FileInStream.class);
         if (newFileName == null) {
-            String msg = "File is not available or corrupted";
-            log.error(msg);
-            throw new StreamException(msg);
+            throw new StreamException("File is not available or corrupted");
         }
         try {
             fileStream = new BufferedInputStream(
-                    new FileInputStream(newFileName));
+                new FileInputStream(newFileName));
         } catch (FileNotFoundException e) {
-            String msg = "File is not available or corrupted";
-            log.error(msg);
-            throw new StreamException(msg);
+            log.error("File is not available or corrupted");
+            throw new StreamException(e);
         }
     }
 
@@ -56,7 +53,7 @@ public class FileInStream implements InStream {
             result = (char) fileStream.read();
         } catch (IOException e) {
             log.error(Constants.STREAM_IS_NOT_AVAILABLE);
-            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(e);
         }
         return result;
     }
@@ -69,7 +66,7 @@ public class FileInStream implements InStream {
             }
         } catch (IOException e) {
             log.error(Constants.STREAM_IS_NOT_AVAILABLE);
-            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(e);
         }
         return true;
     }
@@ -80,7 +77,7 @@ public class FileInStream implements InStream {
             fileStream.close();
         } catch (IOException e) {
             log.error(Constants.STREAM_IS_NOT_AVAILABLE);
-            throw new StreamException(Constants.STREAM_IS_NOT_AVAILABLE);
+            throw new StreamException(e);
         }
     }
 }
